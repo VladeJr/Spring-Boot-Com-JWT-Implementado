@@ -1,31 +1,29 @@
 package com.jwtspring.jwtapp.controller;
 
 import com.jwtspring.jwtapp.dto.JwtResponse;
-import com.jwtspring.jwtapp.dto.LoginRequest;
-import com.jwtspring.jwtapp.dto.RegisterRequest;
-import com.jwtspring.jwtapp.entity.User;
+import com.jwtspring.jwtapp.dto.UserLoginRequest;
+import com.jwtspring.jwtapp.dto.UserRegisterRequest;
 import com.jwtspring.jwtapp.service.UserService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
 
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody @Valid RegisterRequest request) {
-        User createdUser = userService.registerUser(request);
-        return ResponseEntity.ok(createdUser);
+    public ResponseEntity<JwtResponse> register(@RequestBody UserRegisterRequest request) {
+        return ResponseEntity.ok(userService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> login(@RequestBody @Valid LoginRequest request) {
-        String token = userService.authenticate(request);
-        return ResponseEntity.ok(new JwtResponse(token));
+    public ResponseEntity<JwtResponse> login(@RequestBody UserLoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 }

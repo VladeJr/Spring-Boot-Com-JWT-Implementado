@@ -1,40 +1,49 @@
 package com.jwtspring.jwtapp.service;
 
-import com.jwtspring.jwtapp.dto.LoginRequest;
-import com.jwtspring.jwtapp.dto.RegisterRequest;
+import com.jwtspring.jwtapp.dto.JwtResponse;
+import com.jwtspring.jwtapp.dto.UserLoginRequest;
+import com.jwtspring.jwtapp.dto.UserRegisterRequest;
 import com.jwtspring.jwtapp.entity.User;
+import com.jwtspring.jwtapp.enums.Role;
 import com.jwtspring.jwtapp.repository.UserRepository;
 import com.jwtspring.jwtapp.security.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public User registerUser(RegisterRequest request) {
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(new BCryptPasswordEncoder().encode(request.getPassword()))
-                .role(request.getRole())
-                .build();
-
-        return userRepository.save(user);
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    public String authenticate(LoginRequest request) {
+    public JwtResponse register(UserRegisterRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.valueOf(request.getRole()));
+
+        userRepository.save(user);
+        String token = jwtUtil.generateToken(user);
+        return new JwtResponse(token);
+    }
+
+    public JwtResponse login(UserLoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        if (!new BCryptPasswordEncoder().matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Senha inválida");
         }
 
-        return jwtUtil.generateToken(user);
+        String token = jwtUtil.generateToken(user);
+        return new JwtResponse(token);
     }
 }
