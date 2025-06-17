@@ -28,7 +28,7 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.valueOf(request.getRole()));
+        user.setRole(Role.USER);
 
         userRepository.save(user);
         String token = jwtUtil.generateToken(user);
