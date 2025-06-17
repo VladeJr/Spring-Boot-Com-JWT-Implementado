@@ -2,33 +2,39 @@ package com.jwtspring.jwtapp.controller;
 
 import com.jwtspring.jwtapp.entity.User;
 import com.jwtspring.jwtapp.repository.UserRepository;
-import jakarta.validation.constraints.NotBlank;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
-@RequiredArgsConstructor
 public class UserController {
 
     private final UserRepository userRepository;
 
-    @GetMapping("/me")
-    public ResponseEntity<User> getMyProfile(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(user);
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    @PutMapping("/me")
-    public ResponseEntity<User> updateMyProfile(@AuthenticationPrincipal User user,
-                                                @RequestParam(required = false) String name,
-                                                @RequestParam(required = false) @NotBlank String password) {
-        if (name != null) user.setName(name);
-        if (password != null && !password.isBlank()) {
-            user.setPassword(password); // Você pode aplicar encode se quiser
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getProfile(@PathVariable Long id) {
+        Optional<User> user = userRepository.findById(id);
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateProfile(@PathVariable Long id, @RequestBody User updatedUser) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            User existing = user.get();
+            existing.setName(updatedUser.getName());
+            existing.setPassword(updatedUser.getPassword());
+            existing.setRole(updatedUser.getRole());
+            userRepository.save(existing);
+            return ResponseEntity.ok(existing);
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        userRepository.save(user);
-        return ResponseEntity.ok(user);
     }
 }
