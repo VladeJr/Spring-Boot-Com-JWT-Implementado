@@ -109,4 +109,9 @@ Rotas:
 
 ## 👤 Autor
 
-Desenvolvido por Vlademir Vinhoto Junior - Projeto de aprendizado JWT com Spring Boot.
+Desenvolvido por:
+VLADEMIR VINHOTO JUNIOR - 22014195-2
+ALISSON SEGURA KOBAYASHI - RA: 22210867-2
+GUSTAVO ULIAN ZANARDI - RA: 22225566-2
+JOÃO GABRIEL RENZETTI - RA: 22108621-2
+LUCAS LEAL CARDOSO - RA: 22015777-2
